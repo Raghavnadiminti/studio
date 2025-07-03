@@ -38,12 +38,12 @@ function DashboardContent() {
         subtitle={getSubtitle()}
       >
         {user.role === 'Club Lead' && (
-           <Link href="/book-slot" passHref>
-            <Button>
+           <Button asChild>
+            <Link href="/book-slot">
               <PlusCircle className="mr-2 h-4 w-4" />
               New Booking Request
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         )}
       </PageHeader>
       <div className="mt-6">
