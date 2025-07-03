@@ -20,6 +20,7 @@ import { createBooking } from '@/lib/actions';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { Spinner } from '../shared/spinner';
+import { useRouter } from 'next/navigation';
 
 interface BookingFormProps {
   hall: Hall;
@@ -31,6 +32,7 @@ interface BookingFormProps {
 export function BookingForm({ hall, date, time, trigger }: BookingFormProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const [open, setOpen] = useState(false);
@@ -66,6 +68,7 @@ export function BookingForm({ hall, date, time, trigger }: BookingFormProps) {
     if (result.success) {
       toast({ title: 'Success', description: result.message });
       setOpen(false);
+      router.refresh();
     } else {
       toast({ variant: 'destructive', title: 'Error', description: result.message });
     }

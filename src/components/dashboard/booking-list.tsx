@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Booking, Hall, User, bookings as mockBookings, halls as mockHalls, users as mockUsers } from '@/lib/data';
 import {
@@ -31,6 +30,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { format } from 'date-fns';
+import { useRouter } from 'next/navigation';
 
 
 function BookingDetailsDialog({ booking, hall, user }: { booking: Booking, hall?: Hall, user?: User }) {
@@ -77,13 +77,14 @@ const BookingStatusBadge = ({ status }: { status: Booking['status'] }) => {
 export function BookingList() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [bookings, setBookings] = useState<Booking[]>(mockBookings);
+  const router = useRouter();
+  const bookings = mockBookings;
 
   const handleApprove = async (bookingId: string) => {
     const result = await approveBooking(bookingId, user!.role);
     if (result.success) {
-      setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: result.newStatus! } : b));
       toast({ title: 'Success', description: result.message });
+      router.refresh();
     } else {
       toast({ variant: 'destructive', title: 'Error', description: result.message });
     }
@@ -94,8 +95,8 @@ export function BookingList() {
     if (reason) {
       const result = await rejectBooking(bookingId, reason);
       if (result.success) {
-        setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: 'rejected', rejectionReason: reason } : b));
         toast({ title: 'Success', description: result.message });
+        router.refresh();
       } else {
         toast({ variant: 'destructive', title: 'Error', description: result.message });
       }
