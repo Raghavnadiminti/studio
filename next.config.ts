@@ -1,5 +1,5 @@
 /** @type {import('@genkit-ai/next').GenkitNextConfig} */
-const { withGenkit } = require('@genkit-ai/next');
+// const { withGenkit } = require('@genkit-ai/next');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
@@ -20,4 +20,4 @@ const nextConfig = {
   },
 };
 
-module.exports = withGenkit(nextConfig);
+module.exports = nextConfig;
