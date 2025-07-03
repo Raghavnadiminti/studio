@@ -71,6 +71,7 @@ export async function approveBooking(bookingId: string, role: UserRole) {
   }
   
   revalidatePath('/dashboard');
+  revalidatePath('/book-slot');
   return { success: true, message: 'Booking approved.', newStatus };
 }
 
@@ -82,5 +83,6 @@ export async function rejectBooking(bookingId: string, reason: string) {
     bookings[bookingIndex].rejectionReason = reason;
 
     revalidatePath('/dashboard');
+    revalidatePath('/book-slot');
     return { success: true, message: 'Booking rejected.' };
 }

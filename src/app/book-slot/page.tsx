@@ -25,10 +25,10 @@ function BookSlotContent() {
       );
   }
 
-  const approvedBookings = mockBookings.filter(b => b.status === 'approved');
+  const activeBookings = mockBookings.filter(b => b.status !== 'rejected');
 
   const isSlotBooked = (hallId: string, date: Date, time: string) => {
-    return approvedBookings.some(b => b.hallId === hallId && isSameDay(new Date(b.date), date) && b.startTime <= time && b.endTime > time);
+    return activeBookings.some(b => b.hallId === hallId && isSameDay(new Date(b.date), date) && b.startTime <= time && b.endTime > time);
   }
 
   const timeSlots = Array.from({ length: 10 }, (_, i) => `${String(i + 8).padStart(2, '0')}:00`); // 8 AM to 5 PM
