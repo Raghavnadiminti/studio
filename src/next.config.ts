@@ -1,24 +1,2 @@
-import withGenkit from '@genkit-ai/next';
-import type {NextConfig} from 'next';
-
-const nextConfig: NextConfig = {
-  /* config options here */
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'placehold.co',
-        port: '',
-        pathname: '/**',
-      },
-    ],
-  },
-};
-
-export default withGenkit(nextConfig);
+// This file is intentionally left blank to resolve a configuration conflict.
+// The main Next.js configuration is located in the root of the project.
