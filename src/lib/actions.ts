@@ -5,6 +5,10 @@ import type { Booking, UserRole } from './types';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 
+export async function getBookings() {
+  return JSON.parse(JSON.stringify(bookings));
+}
+
 const BookingFormSchema = z.object({
   eventName: z.string().min(3, 'Event name is required.'),
   eventDescription: z.string().min(10, 'Description is required.'),

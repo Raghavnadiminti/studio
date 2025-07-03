@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/hooks/use-auth';
-import { Booking, Hall, User, bookings as mockBookings, halls as mockHalls, users as mockUsers } from '@/lib/data';
+import { Booking, Hall, User, halls as mockHalls, users as mockUsers } from '@/lib/data';
 import {
   Table,
   TableBody,
@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { approveBooking, rejectBooking } from '@/lib/actions';
+import { approveBooking, rejectBooking, getBookings } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle2, XCircle, Hourglass, AlertTriangle, Eye } from 'lucide-react';
 import {
@@ -30,7 +30,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { format } from 'date-fns';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 function BookingDetailsDialog({ booking, hall, user }: { booking: Booking, hall?: Hall, user?: User }) {
@@ -74,17 +75,68 @@ const BookingStatusBadge = ({ status }: { status: Booking['status'] }) => {
   return <Badge className={`${config.color} hover:${config.color} text-white`}>{config.icon}{config.label}</Badge>;
 };
 
+const BookingListSkeleton = () => (
+    <Card>
+      <CardContent className="p-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Event</TableHead>
+              <TableHead>Hall</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <TableRow key={i}>
+                <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                <TableCell><Skeleton className="h-5 w-28" /></TableCell>
+                <TableCell className="text-right">
+                    <div className="flex justify-end items-center gap-2">
+                        <Skeleton className="h-8 w-8 rounded-full" />
+                    </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+);
+
+
 export function BookingList() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const router = useRouter();
-  const bookings = mockBookings;
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchBookings = useCallback(async () => {
+    try {
+      const allBookings = await getBookings();
+      setBookings(allBookings);
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to fetch bookings.' });
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    if (user) {
+      setIsLoading(true);
+      fetchBookings().finally(() => setIsLoading(false));
+    }
+  }, [user, fetchBookings]);
+
 
   const handleApprove = async (bookingId: string) => {
     const result = await approveBooking(bookingId, user!.role);
     if (result.success) {
       toast({ title: 'Success', description: result.message });
-      router.refresh();
+      await fetchBookings();
     } else {
       toast({ variant: 'destructive', title: 'Error', description: result.message });
     }
@@ -96,21 +148,26 @@ export function BookingList() {
       const result = await rejectBooking(bookingId, reason);
       if (result.success) {
         toast({ title: 'Success', description: result.message });
-        router.refresh();
+        await fetchBookings();
       } else {
         toast({ variant: 'destructive', title: 'Error', description: result.message });
       }
     }
   };
 
+  if (isLoading) {
+    return <BookingListSkeleton />;
+  }
+  
   const filteredBookings = bookings.filter(booking => {
-    if (user?.role === 'Club Lead') {
+    if (!user) return false;
+    if (user.role === 'Club Lead') {
       return booking.userId === user.id;
     }
-    if (user?.role === 'HOD') {
+    if (user.role === 'HOD') {
       return booking.status === 'pending_hod';
     }
-    if (user?.role === 'Principal') {
+    if (user.role === 'Principal') {
       return booking.status === 'pending_principal';
     }
     return false;
